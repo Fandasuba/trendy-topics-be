@@ -5,7 +5,7 @@ A backend for the Trendy Topics FE. This handle sthe google trends API requests 
 
 ## How to install.
 
-Simply clone the repo, run npm i. From there, you then need to create a .env file, and then set up the CORS_ORIGIN to wherever you intend to host the website. This can be localhost - defaulting to 3000 typically, but check your lcaol machine to sdeeh what port Next.js forwarded for you when your front end runs npm run dev. You can find the front end repo for this app here. 
+This backend is currently a work in progress. I am learning python at the moment, required by the most up-to-date and working Python Google Trends third party API available. It was originally using a front end JS version, but the web scraper doens't seem to work. You can catch the current front-end using the link below. Once I know more about Python and can get the Python Google Trends API working I'll add further instruction on installing this repo below.
 
 https://github.com/Fandasuba/trendy-topics
 
