@@ -9,6 +9,13 @@ This backend is currently a work in progress. I am learning python at the moment
 
 https://github.com/Fandasuba/trendy-topics
 
+### Setup (work in progress)
+1. Clone the repository
+2. Create a virtual Environemnt by running the following commands: python3 -m venv venv
+3. Install dependencies: pip install -r requirements.txt
+4. Run the application.
+
+
 
 ## .env
 

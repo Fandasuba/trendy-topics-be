@@ -1,2 +1,0 @@
-# Learning Python to start working on the Google Trend python API i need for the backend. Unfortunatlely the JS version doesnt work too well I'm currently on W3 schools learning the basics if Python.
-print("Learning Python... Please Wait.")
