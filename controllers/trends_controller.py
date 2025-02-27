@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.trends_model import TrendsModel
-
+print("Inside controller file")
 trends_bp = Blueprint('trends', __name__)
 trends_model = TrendsModel()
 
