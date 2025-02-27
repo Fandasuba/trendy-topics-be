@@ -6,6 +6,9 @@ trends_model = TrendsModel()
 
 @trends_bp.route('/trending', methods=['POST'])
 def get_trending():
-    country = request.form.get('region', 'united_states') # For my own memory. This is like the Express method of req.body. Rather than listening for an HTTPS request, it instead targets the form that was sumbmitted from the front end.
+    data = request.get_json()  # Python's JSON parse equivalent since im sending over a json format copy.
+    print(data, "Looking for data.")
+    country = data.get('geo', 'united_states')
+    print(country, "Looking for country data")
     trending_list = trends_model.fetch_trending_searches(country)
     return jsonify({"trending": trending_list})
