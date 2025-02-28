@@ -1,14 +1,14 @@
 from flask import Flask
-from controllers.trends_controller import trends_bp
+from controllers.trends_controller import setup_trends_routes
 
 app = Flask(__name__)
 
-
-# app.register_blueprint(trends_bp, url_prefix='/api')
+# Setup routes from controllers
+setup_trends_routes(app)
 
 @app.route("/")
-def trendsAPI():
-    return "<p>Hello World</P>" 
+def home():
+    return "<p>Hello World</p>"
 
 if __name__ == '__main__':
     app.run(debug=True)
