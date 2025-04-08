@@ -8,7 +8,7 @@ setup_trends_routes(app)
 
 @app.route("/")
 def home():
-    return "<p>Hello World</p>"
+    return "<p> Documentation goes here...</p>"
 
 if __name__ == '__main__':
     app.run(debug=True)

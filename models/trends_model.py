@@ -1,19 +1,25 @@
-from pytrends.request import TrendReq
+import requests
 
 class TrendsModel:
     def __init__(self):
-        self.pytrends = TrendReq(hl='en-US', tz=360)
-   
-    def fetch_trending_searches(self, country):
-        print(f"Fetching trending searches for country: {country}")
+        self.splash_url = "http://localhost:8050"
+    
+    def fetch_trends(self, params):
+        response = requests.post(self.splash_url)
         
-        try:
-            trending_df = self.pytrends.trending_searches(pn=country)
-            trending_list = trending_df[0].tolist()
-            print(trending_list)
-            return trending_list
-        except Exception as e:
-            # Log the error
-            print(f"Error fetching trending searches for {country}: {str(e)}")
-            # Return empty list instead of crashing
-            return []
+        if response.status_code != 200:
+            raise Exception(f"Splash error: {response.text}")
+        
+        scraped_data = response.json()
+        
+        return scraped_data
+        
+    def _extract_trends_from_html(self, html):
+        """
+        Parse the HTML to extract specific trend information
+        
+        This would use a library like BeautifulSoup to extract the relevant data
+        """
+        # Implement parsing logic here
+        # Example placeholder
+        return {"trending_topics": ["example1", "example2"]}
