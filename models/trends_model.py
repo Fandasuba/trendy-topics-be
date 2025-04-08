@@ -1,25 +1,39 @@
 import requests
+import asyncio
+import aiohttp
 
 class TrendsModel:
     def __init__(self):
         self.splash_url = "http://localhost:8050"
     
     def fetch_trends(self, params):
-        response = requests.post(self.splash_url)
-        
-        if response.status_code != 200:
-            raise Exception(f"Splash error: {response.text}")
-        
-        scraped_data = response.json()
-        
-        return scraped_data
-        
-    def _extract_trends_from_html(self, html):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self._async_fetch_trends(params))
+        finally:
+            loop.close()
+    
+    async def _async_fetch_trends(self, params):
         """
-        Parse the HTML to extract specific trend information
-        
-        This would use a library like BeautifulSoup to extract the relevant data
+        Asynchronously fetch trends from Scrapy Splash
         """
-        # Implement parsing logic here
-        # Example placeholder
-        return {"trending_topics": ["example1", "example2"]}
+        async with aiohttp.ClientSession() as session:
+            # Prepare the request with parameters
+            geo = params.get('geo', 'GB')
+            category = params.get('category', '17')
+            
+            # This assumes your Scrapy Splash container accepts these parameters
+            request_data = {
+                'geo': geo,
+                'category': category
+            }
+            
+            # Make the request to your Scrapy Splash container
+            async with session.post(self.splash_url, json=request_data) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    raise Exception(f"Error from Scrapy Splash: {error_text}")
+                
+                # Return the already parsed data
+                return await response.json()
