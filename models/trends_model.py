@@ -19,21 +19,16 @@ class TrendsModel:
         Asynchronously fetch trends from Scrapy Splash
         """
         async with aiohttp.ClientSession() as session:
-            # Prepare the request with parameters
-            geo = params.get('geo', 'GB')
+            geo = params.get('geo', 'US')
             category = params.get('category', '17')
-            
-            # This assumes your Scrapy Splash container accepts these parameters
             request_data = {
                 'geo': geo,
                 'category': category
             }
             
-            # Make the request to your Scrapy Splash container
             async with session.post(self.splash_url, json=request_data) as response:
                 if response.status != 200:
                     error_text = await response.text()
                     raise Exception(f"Error from Scrapy Splash: {error_text}")
                 
-                # Return the already parsed data
                 return await response.json()
