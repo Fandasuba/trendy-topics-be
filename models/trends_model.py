@@ -4,7 +4,7 @@ import aiohttp
 
 class TrendsModel:
     def __init__(self):
-        self.splash_url = "http://localhost:8050"
+        self.splash_url = "http://distracted_brown:8050"
     
     def fetch_trends(self, params):
         loop = asyncio.new_event_loop()
@@ -25,6 +25,9 @@ class TrendsModel:
                 'geo': geo,
                 'category': category
             }
+
+            splash_endpoint = f"{self.splash_url}/execute"
+            print(f"Connecting to Splash at URL: {splash_endpoint}")
             
             async with session.post(self.splash_url, json=request_data) as response:
                 if response.status != 200:
