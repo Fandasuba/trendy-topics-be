@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from models.trends_model import TrendsModel
+from models.trends_model import TrendsModel 
 print("Inside controller file")
 
 def setup_trends_routes(app):
