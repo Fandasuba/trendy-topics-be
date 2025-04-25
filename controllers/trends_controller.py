@@ -1,32 +1,37 @@
+import logging
 from flask import request, jsonify
-from models.trends_model import TrendsModel 
-print("Inside controller file")
+from models.trends_model import TrendsModel
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def setup_trends_routes(app):
-    print(f"Setting up routes for app: {app}")
+    logger.info(f"Setting up routes for app: {app}")
     
     @app.route('/trending', methods=['POST'])
     def get_trends():
-        print("Endpoint /trending was called")
+        logger.info("Endpoint /trending was called")
         params = request.get_json()
-        print(f"Request params: {params}")
+        logger.debug(f"Request params: {params}")
        
         if not params:
             return jsonify({"error": "No parameters provided"}), 400
-       
+        
         trends_model = TrendsModel()
        
         try:
-            print("Trying to fetch trends")
+            logger.info("Trying to fetch trends")
             results = trends_model.fetch_trends(params)
-            print(f"Results: {results}")
+            logger.debug(f"Results: {results}")
             return jsonify({
                 "status": "success",
                 "data": results
             })
-           
+        except ValueError as ve:
+            logger.error(f"ValueError: {str(ve)}")
+            return jsonify({"status": "error", "message": "Invalid value"}), 400
         except Exception as e:
-            print(f"Error: {str(e)}")
+            logger.error(f"Error: {str(e)}")
             return jsonify({
                 "status": "error",
                 "message": str(e)

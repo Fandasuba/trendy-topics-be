@@ -5,10 +5,11 @@ import os
 
 class TrendsModel:
     def __init__(self):
-        self.splash_url = os.getenv("SPLASH_URL", "http://splash:8050")
+        self.splash_url = "http://splash:8050/render.json"
         print(f"Splash URL set to: {self.splash_url}")
     
     def fetch_trends(self, params):
+        print(f"--------> Here are the self and param variables: {self}, {params}")
         print("in fetch trends function of the model.")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -24,12 +25,16 @@ class TrendsModel:
         async with aiohttp.ClientSession() as session:
             geo = params.get('geo', 'US')
             category = params.get('category', '17')
+            # The URL that we want to scrape
+            url = f"https://trends.google.com/trending?geo={geo}&category={category}"
+            
             request_data = {
+                'url': url,  # Include the URL parameter
                 'geo': geo,
                 'category': category
             }
 
-            splash_endpoint = f"{self.splash_url}/execute"
+            splash_endpoint = f"{self.splash_url}"
             print(f"Connecting to Splash at URL: {splash_endpoint}")
             
             async with session.post(splash_endpoint, json=request_data) as response:

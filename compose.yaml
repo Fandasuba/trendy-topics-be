@@ -7,19 +7,33 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
+
 services:
   server:
     build:
       context: .
     ports:
-      - 8000:8000
+      - "8000:8000"
     networks:
-      - trendy-topics-network
+      - trendy-talks-network
+    depends_on:
+      - splash
+    environment:
+      - FLASK_RUN_HOST=0.0.0.0
+      - FLASK_RUN_PORT=8000
+      - SPLASH_HOST=splash
+      - SPLASH_PORT=8050
+
   splash:
-    external: true
+    image: scrapinghub/splash
+    ports:
+      - "8050:8050"
+    networks:
+      - trendy-talks-network
+
 networks:
-  trendy-topics-network:
-    external: true
+  trendy-talks-network:
+    driver: bridge
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
