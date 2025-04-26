@@ -11,6 +11,20 @@ BOT_NAME = "trends"
 
 SPIDER_MODULES = ["trends.spiders"]
 NEWSPIDER_MODULE = "trends.spiders"
+SPLASH_URL = 'http://172.19.0.2:8050'
+
+
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy_splash.SplashCookiesMiddleware': 723,
+    'scrapy_splash.SplashMiddleware': 725,
+    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
+}
+
+SPIDER_MIDDLEWARES = {
+    'scrapy_splash.SplashDeduplicateArgsMiddleware': 100,
+}
+
+REQUEST_FINGERPRINTER_CLASS = 'scrapy_splash.SplashRequestFingerprinter'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

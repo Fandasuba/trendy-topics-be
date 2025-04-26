@@ -1,45 +1,52 @@
-import requests
+from twisted.internet import reactor, defer
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.project import get_project_settings
+from trends.trends.spiders.trends_spider import TrendsSpider
 import asyncio
-import aiohttp
-import os
 
 class TrendsModel:
-    def __init__(self):
-        self.splash_url = "http://splash:8050/render.json"
-        print(f"Splash URL set to: {self.splash_url}")
-    
     def fetch_trends(self, params):
-        print(f"--------> Here are the self and param variables: {self}, {params}")
-        print("in fetch trends function of the model.")
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(self._async_fetch_trends(params))
-        finally:
-            loop.close()
-    
-    async def _async_fetch_trends(self, params):
-        """
-        Asynchronously fetch trends from Scrapy Splash
-        """
-        async with aiohttp.ClientSession() as session:
-            geo = params.get('geo', 'US')
-            category = params.get('category', '17')
-            # The URL that we want to scrape
-            url = f"https://trends.google.com/trending?geo={geo}&category={category}"
-            
-            request_data = {
-                'url': url,  # Include the URL parameter
-                'geo': geo,
-                'category': category
-            }
+        shared_data = []
+        runner = CrawlerRunner()
 
-            splash_endpoint = f"{self.splash_url}"
-            print(f"Connecting to Splash at URL: {splash_endpoint}")
+        @defer.inlineCallbacks
+        def crawl():
+            yield runner.crawl(TrendsSpider, shared_data=shared_data, params=params)
+            reactor.stop()
+            print("Debug: Shared data after crawling:", shared_data)
+
+        crawl()
+        reactor.run()  # Block until the crawling is finished
+        return shared_data
+    
+    # async def run_spider(self, params):
+    #     """
+    #     Run the Scrapy spider and return the scraped data.
+    #     """
+    #     # @defer.inlineCallbacks
+    #     # def _crawl():
+    #     #     """
+    #     #     Helper function to handle the Twisted Deferred mechanism.
+    #     #     """
+    #     #     results = []
             
-            async with session.post(splash_endpoint, json=request_data) as response:
-                if response.status != 200:
-                    error_text = await response.text()
-                    raise Exception(f"Error from Scrapy Splash: {error_text}")
+    #     #     # Create a custom Spider class with overridden start_requests
+    #     #     class CustomTrendsSpider(TrendsSpider):
+    #     #         def __init__(self, *args, **kwargs):
+    #     #             super().__init__(*args, **kwargs)
+    #     #             self.custom_params = params
                 
-                return await response.json()
+    #     #         def start_requests(self):
+    #     #             yield from super().start_requests(self.custom_params)
+
+    #     #         def parse(self, response):
+    #     #             trends_data = super().parse(response)
+    #     #             results.extend(trends_data)  # Store the scraped data
+
+    #     #     # Run the spider
+    #     #     yield self.crawler_runner.crawl(CustomTrendsSpider)
+    #     #     reactor.stop()  # Stop the reactor when done
+    #     #     defer.returnValue(results)
+
+    #     # Run the Twisted reactor in a thread
+    #     return await asyncio.to_thread(lambda: reactor.run())

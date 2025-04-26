@@ -30,6 +30,7 @@ services:
       - "8050:8050"
     networks:
       - trendy-talks-network
+    restart: always
 
 networks:
   trendy-talks-network:
