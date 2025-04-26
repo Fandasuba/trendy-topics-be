@@ -1,8 +1,9 @@
 from flask import Flask
+from quart import Quart
 from controllers.trends_controller import setup_trends_routes
 
 print("Start of main file")
-app = Flask(__name__)
+app = Quart(__name__)
 
 # Setup routes from controllers
 print("Before setup_trends_route")

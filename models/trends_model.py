@@ -1,23 +1,43 @@
-from twisted.internet import reactor, defer
+import asyncio
 from scrapy.crawler import CrawlerRunner
 from scrapy.utils.project import get_project_settings
 from trends.trends.spiders.trends_spider import TrendsSpider
-import asyncio
+from twisted.internet.threads import deferToThread  # Correct import
+from twisted.internet import defer
+from twisted.internet.asyncioreactor import AsyncioSelectorReactor
+from twisted.internet import asyncioreactor
+from twisted.internet import defer
+
+# Set the event loop policy to use Twisted's reactor
+asyncioreactor.install()
+
+# Install the asyncio reactor before importing any Twisted-related modules
+asyncio.set_event_loop_policy(AsyncioSelectorReactor())
 
 class TrendsModel:
-    def fetch_trends(self, params):
+    async def fetch_trends_async(self, params):
         shared_data = []
-        runner = CrawlerRunner()
 
-        @defer.inlineCallbacks
-        def crawl():
-            yield runner.crawl(TrendsSpider, shared_data=shared_data, params=params)
-            reactor.stop()
-            print("Debug: Shared data after crawling:", shared_data)
+        # Initialize Scrapy's CrawlerRunner
+        runner = CrawlerRunner(get_project_settings())
 
-        crawl()
-        reactor.run()  # Block until the crawling is finished
-        return shared_data
+        # Define crawl as an async function
+        async def crawl():
+            # Use deferToThread from twisted.internet.threads
+            # Add callback handling for the deferred result
+            deferred = deferToThread(runner.crawl, TrendsSpider, shared_data=shared_data, params=params)
+            result = await self._get_deferred_result(deferred)
+            return result
+
+        # Run the crawl function and wait for the result
+        trends_data = await crawl()
+
+        return trends_data
+
+    # Helper function to handle deferred results with asyncio
+    async def _get_deferred_result(self, deferred):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, deferred.result)
     
     # async def run_spider(self, params):
     #     """
