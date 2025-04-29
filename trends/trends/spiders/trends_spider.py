@@ -1,56 +1,97 @@
+import logging
 from pathlib import Path
 import scrapy
 from scrapy_splash import SplashRequest
-import json
+import time
+
+logger = logging.getLogger(__name__)
 
 class TrendsSpider(scrapy.Spider):
     name = "trends"
-
+    
     def __init__(self, shared_data, params, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.shared_data = shared_data
         self.params = params
-
+        logger.info(f"TrendsSpider initialized with params: {params}")
+    
     def start_requests(self):
-        print(f"Params at the start of the start_requests function in the crawler: {self.params}")
-        print(f"Shared Data at the start of the start_requests function in the crawler: {self.shared_data}")
+        logger.info(f"Starting requests with params: {self.params}")
+        
         geo = self.params.get('geo', 'US')
         category = self.params.get('category', '17')
         url = f"https://trends.google.com/trending?geo={geo}&category={category}"
-       
-        yield SplashRequest(
-            url=url,
-            callback=self.parse,
-              args={
-            'wait': 4, 
+        
+        logger.info(f"Making request to URL: {url}")
+        splash_args = {
+            'wait': 4,
             'timeout': 90,
             'images': 0,
             'resource_timeout': 20,
-        },
-        meta={'dont_redirect': True},
+        }
+        
+        logger.info(f"Splash args: {splash_args}")
+        
+        yield SplashRequest(
+            url=url,
+            callback=self.parse,
+            args=splash_args,
+            meta={'dont_redirect': True},
+            errback=self.handle_error
         )
-
+    
+    def handle_error(self, failure):
+        logger.error(f"Request failed: {failure}")
+        self.shared_data.append({"error": str(failure)})
+    
     def parse(self, response):
-        self.logger.info(f"Response from {response.url} with {response.status} status.")
-       
-        # filename = "trends_test.html"
-        # Path(filename).write_bytes(response.body)
-        # self.logger.info(f"Saved response to {filename}")
-       
-        # Divs with class "mZ3RIc" seem to be the actual trend name that pops up.
+        logger.info(f"Response from {response.url} with {response.status} status")
+        if response.status != 200:
+            logger.error(f"Got non-200 response: {response.status}")
+            self.shared_data.append({"error": f"Got status code {response.status}"})
+            return
+        
         trends_data = []
-        self.logger.info(f"Params at the start of the start_requests function: {self.params}")
-        self.logger.info(f"Shared Data at the start of the start_requests function: {self.shared_data}")
-        for trend in response.css("tr.enOdEe-wZVHld-xMbwt"):
-            keyword = trend.css("div.mZ3RIc::text").getall()
-            related = trend.css("div.k36WW span.mUIrbf-vQzf8d::text").getall()
-            time_ago = trend.css("div.A7jE4::text").get()
-            trends_data.append({"keyword": keyword, "related": related, "time_ago": time_ago})
-        # for trend in response.css("tr.enOdEe-wZVHld-xMbwt"):
-        #     keyword = trend.css("div.mZ3RIc::text").getall()
-        #     related = trend.css("div.k36WW span.mUIrbf-vQzf8d::text").getall()
-        #     time_ago = trend.css("div.A7jE4::text").get()
-        #     trends_data.append({"keyword": keyword, "related": related, "time_ago": time_ago})
-        self.logger.info(f"Printing Trends Data After the css element scraping: {trends_data}")
+        
+        trends = response.css("tr.enOdEe-wZVHld-xMbwt")
+        logger.info(f"Found {len(trends)} trend elements")
+        
+
+        # Trying alternative div classses and scrpay command for scraping just in case.
+        if not trends:
+            logger.warning("No trends found with primary selector, trying alternatives")
+            trends = response.css("div.enOdEe")
+            logger.info(f"Found {len(trends)} trend elements with alternative selector")
+        
+        # Process trends if found
+        for i, trend in enumerate(trends):
+            try:
+                keyword = trend.css("div.mZ3RIc::text").getall()
+                related = trend.css("div.k36WW span.mUIrbf-vQzf8d::text").getall()
+                time_ago = trend.css("div.A7jE4::text").get()
+                
+                if not keyword:
+                    # Try alternative selectors
+                    keyword = trend.css("div.term-text::text").getall()
+                
+                trends_data.append({
+                    "keyword": keyword if keyword else ["Unknown"],
+                    "related": related if related else [],
+                    "time_ago": time_ago if time_ago else "Unknown"
+                })
+                logger.debug(f"Processed trend #{i+1}: {keyword}")
+            except Exception as e:
+                logger.error(f"Error processing trend #{i+1}: {e}")
+        
+        logger.info(f"Extracted {len(trends_data)} trends")
+        
+        # Debug there incase we found no data but got a successful response. Likely Crawler JS not working or Google has changd its Trends div names again.
+        if not trends_data and response.status == 200:
+            logger.warning("Got 200 response but found no trends data")
+            trends_data.append({"info": "No trends found in the response"})
+        
+        # Sends  back data to parent model for parsing back to controller.
         self.shared_data.extend(trends_data)
-        self.logger.info(f"Printing Shared_Data after extending it whithin the crawler: {self.shared_data}")
+        logger.info(f"Updated shared_data with {len(trends_data)} items")
+        
+        return trends_data
