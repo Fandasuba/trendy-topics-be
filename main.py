@@ -12,6 +12,9 @@ setup_trends_routes(app)
 
 @app.route("/")
 async def home():
+
+
+   
    return "<h1>Welcome to Trendy Talks API</h1>" \
     "<p>To use Trendy Talks, you can either make a front-end API request when the site is hosted, or run curl commands via scripts. For example:</p>" \
     "<p>curl -X POST http://172.19.0.3:8000/trending -H 'Content-Type: application/json' -d '{\"geo\": \"GB\", \"category\": \"17\"}'</p>" \
