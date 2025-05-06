@@ -12,7 +12,7 @@ app = cors(app, allow_origin="*")
 
 # Get the absolute path to the directory containing `main.py`
 base_dir = os.path.dirname(os.path.abspath(__file__))
-swagger_ui_dist = os.path.join(base_dir, "swagger-ui/dist")  # Absolute path to `swagger-ui/dist`
+swagger_ui_dist = os.path.join(base_dir, "swagger-ui")
 
 logger.info(f"Base directory is set to: {base_dir}")
 logger.info(f"Swagger UI directory is set to: {swagger_ui_dist}")
